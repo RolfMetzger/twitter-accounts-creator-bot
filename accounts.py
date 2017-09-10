@@ -39,13 +39,13 @@ class TwitterCreator(SeleniumHelper):
 
 
 	def mobileCreateUser(self, row):
-		self.loadPage(self.DESKTOP_URL_CREATE)
-		self.waitAndWrite(self.DESKTOP_FIELD_SIGN_UP_NAME, row['name'])
-		self.submitForm(self.selectAndWrite(self.DESKTOP_FIELD_SIGN_UP_EMAIL, row['email']))
-		self.submitForm(self.waitAndWrite(self.DESKTOP_FIELD_SIGN_UP_PASSWORD, row['password']))
-		self.clickSelector(self.DESKTOP_BUTTON_SKIP_PHONE)
-		self.submitForm(self.waitAndWrite(self.DESKTOP_FIELD_SIGN_UP_USERNAME, row['username']))
-		self.waitAndClick(self.DESKTOP_BUTTON_INTERESTS)
+		self.loadPage(self.MOBILE_URL_CREATE)
+		self.waitAndWrite(self.MOBILE_FIELD_SIGN_UP_NAME, row['name'])
+		self.submitForm(self.selectAndWrite(self.MOBILE_FIELD_SIGN_UP_EMAIL, row['email']))
+		self.submitForm(self.waitAndWrite(self.MOBILE_FIELD_SIGN_UP_PASSWORD, row['password']))
+		self.clickSelector(self.waitShowElement(self.MOBILE_BUTTON_SKIP_PHONE))
+		self.submitForm(self.waitAndWrite(self.MOBILE_FIELD_SIGN_UP_USERNAME, row['username']))
+		self.waitAndClick(self.MOBILE_BUTTON_INTERESTS)
 		#main_content > div.footer > form > input
 		time.sleep(9999)
 		# self.submitForm()
@@ -67,7 +67,7 @@ class TwitterCreator(SeleniumHelper):
 		self.waitAndWrite(self.DESKTOP_FIELD_SIGN_UP_NAME, row['name'])
 		self.selectAndWrite(self.DESKTOP_FIELD_SIGN_UP_EMAIL, row['email'])
 		self.submitForm(self.selectAndWrite(self.DESKTOP_FIELD_SIGN_UP_PASSWORD, row['password']))
-		self.submitForm(self.waitAndWrite(self.DESKTOP_FIELD_SIGN_UP_PHONE, row['phone']))
+		# self.submitForm(self.waitAndWrite(self.DESKTOP_FIELD_SIGN_UP_PHONE, row['phone']))
 		row['code'] = raw_input('Code: ')
 		self.submitForm(self.waitAndWrite(self.DESKTOP_FIELD_SIGN_UP_CODE, row['code']))
 		self.waitAndClick(self.DESKTOP_FIELD_SIGN_UP_SUGGESTION)
@@ -91,6 +91,7 @@ class TwitterCreator(SeleniumHelper):
 					toRow = numElements
 			fromRow -= 1
 			if fromRow < numElements:
+				print rows
 				self.driver = self.getWebdriver(driverType)
 				for numRow in range(fromRow, toRow):
 					row = rows[numRow]
@@ -106,27 +107,20 @@ class TwitterCreator(SeleniumHelper):
 
 	def getWebdriver(self, driverType):
 		if driverType == 'proxy':
-			profile = webdriver.FirefoxProfile()
-			profile.set_preference( "network.proxy.type", 1 )
-			profile.set_preference( "network.proxy.socks", "127.0.0.1" )
-			profile.set_preference( "network.proxy.socks_port", 9150 )
-			profile.set_preference( "network.proxy.socks_remote_dns", True )
-			profile.set_preference( "places.history.enabled", False )
-			profile.set_preference( "privacy.clearOnShutdown.offlineApps", True )
-			profile.set_preference( "privacy.clearOnShutdown.passwords", True )
-			profile.set_preference( "privacy.clearOnShutdown.siteSettings", True )
-			profile.set_preference( "privacy.sanitize.sanitizeOnShutdown", True )
-			profile.set_preference( "signon.rememberSignons", False )
-			profile.set_preference( "network.cookie.lifetimePolicy", 2 )
-			profile.set_preference( "network.dns.disablePrefetch", True )
-			profile.set_preference( "network.http.sendRefererHeader", 0 )
-			profile.set_preference( "javascript.enabled", False )
-			profile.set_preference( "permissions.default.image", 2 )
-			return webdriver.Firefox(profile)
+			chop = webdriver.ChromeOptions()
+			chop.add_argument('--disable-gpu')
+			chop.add_argument('--disable-impl-side-painting')
+			chop.add_argument('--disable-gpu-sandbox')
+			chop.add_argument('--disable-accelerated-2d-canvas')
+			chop.add_argument('--disable-accelerated-jpeg-decoding')
+			chop.add_argument('--no-sandbox')
+			chop.add_argument('--test-type=ui')
+			chop.add_argument('--applicationCacheEnabled=true')
+			return webdriver.Chrome(chrome_options = chop)
 		elif driverType == 'headless':
 			return webdriver.PhantomJS()
 		else:
-			return webdriver.Firefox()
+			return webdriver.Chrome()
 
 def main(argv):
 	fromRow = 1
@@ -148,7 +142,7 @@ def main(argv):
 		inputFile = raw_input('Input file path: ')
 	creator = TwitterCreator()
 	print('Process started')
-	creator.start(callbacks=[creator.desktopCreateUserPhone], inputFile=inputFile, fromRow=fromRow, toRow=toRow, driverType=driverType)
+	creator.start(callbacks=[creator.mobileCreateUser], inputFile=inputFile, fromRow=fromRow, toRow=toRow, driverType=driverType)
 	print('Process ended')
 
 if __name__ == "__main__":
